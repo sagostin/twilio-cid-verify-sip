@@ -1,12 +1,12 @@
+import os
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import Flask, request, jsonify
 from flask.cli import load_dotenv
 from pyVoIP.VoIP import VoIPPhone, VoIPCall
-import os
 from twilio.rest import Client
-import threading
-from concurrent.futures import ThreadPoolExecutor
 
 load_dotenv()
 
@@ -34,14 +34,27 @@ def handle_call(call: VoIPCall):
         call_session_id = call.session_id
         call.answer()
 
-        if call_session_id in verification_info:
-            code = verification_info[call_session_id]['verification_code']
-            for digit in str(code):
-                tone_data = load_dtmf_tone(digit)
-                call.write_audio(tone_data)
-                time.sleep(0.5)  # Wait for 500ms before playing the next digit
+        print("From Number: " + call.request.headers['From']['number'])
+        print("From Caller: " + call.request.headers['From']['caller'])
+
+        print("To Number: " + call.request.headers['To']['number'])
+        print("To Caller: " + call.request.headers['To']['caller'])
+        print(call.request.headers)
+
+        print(verification_info)
+
+        code = "1234567890"
+        time.sleep(1.5)
+        for digit in str(code):
+            tone_data = load_dtmf_tone(digit)
+            call.write_audio(tone_data)
+            time.sleep(0.5)  # Wait for 500ms before playing the next digit
 
         call.hangup()
+
+        if call_session_id in verification_info:
+            # code = "12345"
+            print("testing")
     except Exception as e:
         print(f"Error during call handling: {e}")
 
